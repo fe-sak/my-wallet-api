@@ -5,7 +5,6 @@ import db from '../databaseConnect.js';
 
 export async function login(req, res) {
   const { email, password } = req.body;
-  console.log(email);
 
   try {
     const user = await db.collection('users').findOne({ email });
@@ -58,8 +57,7 @@ export async function signUp(req, res) {
       ...user,
       password: bcrypt.hashSync(user.password, parseInt(process.env.SALT)),
     });
-  } catch (error) {
-    console.log(error);
+  } catch {
     res.status(500).send('Erro interno do servidor');
   }
 
