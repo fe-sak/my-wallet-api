@@ -20,16 +20,12 @@ export async function getUser(req, res) {
 }
 
 export async function addIncome(req, res) {
-  const { authorization } = req.headers;
-  const income = req.body;
-
-  const token = authorization?.replace('Bearer ', '');
-  if (!token) return res.sendStatus(401);
-
   const bodySchema = Joi.object({
     value: Joi.number().required(),
     description: Joi.string().max(40).required(),
   });
+  const income = req.body;
+  income.value = parseFloat(income.value);
 
   const validate = bodySchema.validate(income);
   if (validate.error) {
@@ -40,11 +36,7 @@ export async function addIncome(req, res) {
   }
 
   try {
-    const session = await db.collection('sessions').findOne({ token });
-    if (!session) return res.sendStatus(401);
-
-    const user = await db.collection('users').findOne({ _id: session.userId });
-    if (!user) return res.sendStatus(401);
+    const user = res.locals.user;
     await db.collection('transactions').insertOne({
       ...income,
       userId: user._id,
@@ -52,9 +44,70 @@ export async function addIncome(req, res) {
     });
 
     res.sendStatus(201);
-  } catch {
+  } catch (error) {
+    console.log(error);
     res.status(500).send('Erro interno do servidor');
   }
 }
 
-export async function addExpense(req, res) {}
+export async function addExpense(req, res) {
+  const bodySchema = Joi.object({
+    value: Joi.number().required(),
+    description: Joi.string().max(40).required(),
+  });
+  const income = req.body;
+  income.value = -1 * parseFloat(income.value);
+
+  const validate = bodySchema.validate(income);
+  if (validate.error) {
+    res
+      .status(422)
+      .send(validate.error.details.map((detail) => detail.message));
+    return;
+  }
+
+  try {
+    const user = res.locals.user;
+    await db.collection('transactions').insertOne({
+      ...income,
+      userId: user._id,
+      date: dayjs().format('DD/MM'),
+    });
+
+    res.sendStatus(201);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Erro interno do servidor');
+  }
+}
+
+export async function deleteTransaction(req, res) {
+  const bodySchema = Joi.object({
+    value: Joi.number().required(),
+    description: Joi.string().max(40).required(),
+  });
+  const income = req.body;
+  income.value = parseFloat(income.value);
+
+  const validate = bodySchema.validate(income);
+  if (validate.error) {
+    res
+      .status(422)
+      .send(validate.error.details.map((detail) => detail.message));
+    return;
+  }
+
+  try {
+    const user = res.locals.user;
+    await db.collection('transactions').insertOne({
+      ...income,
+      userId: user._id,
+      date: dayjs().format('DD/MM'),
+    });
+
+    res.sendStatus(201);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Erro interno do servidor');
+  }
+}
