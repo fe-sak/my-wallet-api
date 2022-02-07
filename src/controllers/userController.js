@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import db from '../databaseConnect.js';
 import dayjs from 'dayjs';
+import { ObjectId } from 'mongodb';
 
 export async function getUser(req, res) {
   try {
@@ -55,10 +56,10 @@ export async function addExpense(req, res) {
     value: Joi.number().required(),
     description: Joi.string().max(40).required(),
   });
-  const income = req.body;
-  income.value = -1 * parseFloat(income.value);
+  const expense = req.body;
+  expense.value = -1 * parseFloat(expense.value);
 
-  const validate = bodySchema.validate(income);
+  const validate = bodySchema.validate(expense);
   if (validate.error) {
     res
       .status(422)
@@ -69,7 +70,7 @@ export async function addExpense(req, res) {
   try {
     const user = res.locals.user;
     await db.collection('transactions').insertOne({
-      ...income,
+      ...expense,
       userId: user._id,
       date: dayjs().format('DD/MM'),
     });
@@ -82,27 +83,28 @@ export async function addExpense(req, res) {
 }
 
 export async function deleteTransaction(req, res) {
-  const bodySchema = Joi.object({
-    value: Joi.number().required(),
-    description: Joi.string().max(40).required(),
-  });
-  const income = req.body;
-  income.value = parseFloat(income.value);
+  const idSchema = Joi.string().required();
+  const { id } = req.params;
 
-  const validate = bodySchema.validate(income);
+  const validate = idSchema.validate(id);
   if (validate.error) {
     res
       .status(422)
       .send(validate.error.details.map((detail) => detail.message));
     return;
   }
-
+  console.log(id.id);
   try {
-    const user = res.locals.user;
-    await db.collection('transactions').insertOne({
-      ...income,
-      userId: user._id,
-      date: dayjs().format('DD/MM'),
+    const transaction = await db.collection('transactions').findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!transaction) {
+      res.sendStatus(404);
+      return;
+    }
+    await db.collection('transactions').deleteOne({
+      _id: new ObjectId(id),
     });
 
     res.sendStatus(201);

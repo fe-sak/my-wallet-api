@@ -2,8 +2,8 @@ import db from '../databaseConnect.js';
 
 export default async function (req, res, next) {
   const { authorization } = req.headers;
+
   const token = authorization?.replace('Bearer ', '');
-  console.log(token);
   if (!token) return res.sendStatus(401);
 
   try {
@@ -19,5 +19,6 @@ export default async function (req, res, next) {
     console.log(error);
     return res.sendStatus(500);
   }
+  console.log('yay');
   next();
 }
