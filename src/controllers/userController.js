@@ -2,6 +2,8 @@ import Joi from 'joi';
 import db from '../databaseConnect.js';
 import dayjs from 'dayjs';
 import { ObjectId } from 'mongodb';
+import { transactionSchema } from '../routes/schemas/transactionSchema.js';
+import { idSchema } from '../routes/schemas/idSchema.js';
 
 export async function getUser(req, res) {
   try {
@@ -21,14 +23,10 @@ export async function getUser(req, res) {
 }
 
 export async function addIncome(req, res) {
-  const bodySchema = Joi.object({
-    value: Joi.number().required(),
-    description: Joi.string().max(40).required(),
-  });
   const income = req.body;
   income.value = parseFloat(income.value);
 
-  const validate = bodySchema.validate(income);
+  const validate = transactionSchema.validate(income);
   if (validate.error) {
     res
       .status(422)
@@ -52,14 +50,10 @@ export async function addIncome(req, res) {
 }
 
 export async function addExpense(req, res) {
-  const bodySchema = Joi.object({
-    value: Joi.number().required(),
-    description: Joi.string().max(40).required(),
-  });
   const expense = req.body;
   expense.value = -1 * parseFloat(expense.value);
 
-  const validate = bodySchema.validate(expense);
+  const validate = transactionSchema.validate(expense);
   if (validate.error) {
     res
       .status(422)
@@ -83,7 +77,6 @@ export async function addExpense(req, res) {
 }
 
 export async function deleteTransaction(req, res) {
-  const idSchema = Joi.string().required();
   const { id } = req.params;
 
   const validate = idSchema.validate(id);
@@ -93,7 +86,6 @@ export async function deleteTransaction(req, res) {
       .send(validate.error.details.map((detail) => detail.message));
     return;
   }
-  console.log(id.id);
   try {
     const transaction = await db.collection('transactions').findOne({
       _id: new ObjectId(id),
@@ -106,6 +98,50 @@ export async function deleteTransaction(req, res) {
     await db.collection('transactions').deleteOne({
       _id: new ObjectId(id),
     });
+
+    res.sendStatus(201);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Erro interno do servidor');
+  }
+}
+
+export async function editTransaction(req, res) {
+  const newTransaction = req.body;
+  newTransaction.value = parseFloat(newTransaction.value);
+
+  const { id } = req.params;
+
+  const validate = transactionSchema.validate(newTransaction);
+  if (validate.error) {
+    res
+      .status(422)
+      .send(validate.error.details.map((detail) => detail.message));
+    return;
+  }
+
+  try {
+    const oldTransaction = await db.collection('transactions').findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!oldTransaction) {
+      res.sendStatus(404);
+      return;
+    }
+
+    if (oldTransaction.value < 0)
+      newTransaction.value = newTransaction.value * -1;
+
+    const updateDoc = {
+      $set: {
+        ...newTransaction,
+      },
+    };
+
+    await db
+      .collection('transactions')
+      .updateOne({ _id: new ObjectId(id) }, updateDoc);
 
     res.sendStatus(201);
   } catch (error) {

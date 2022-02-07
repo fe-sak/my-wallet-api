@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import bcrypt from 'bcrypt';
-import Joi from 'joi';
 import db from '../databaseConnect.js';
+import { userSchema } from '../routes/schemas/userSchema.js';
 
 export async function login(req, res) {
   const { email, password } = req.body;
@@ -26,12 +26,6 @@ export async function login(req, res) {
 
 export async function signUp(req, res) {
   const user = req.body;
-  const userSchema = Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-    confirmPassword: Joi.string(),
-  });
 
   if (user.confirmPassword) {
     delete user.confirmPassword;
