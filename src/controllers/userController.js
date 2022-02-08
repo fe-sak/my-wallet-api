@@ -1,9 +1,8 @@
-import Joi from 'joi';
 import db from '../databaseConnect.js';
 import dayjs from 'dayjs';
 import { ObjectId } from 'mongodb';
-import { transactionSchema } from '../routes/schemas/transactionSchema.js';
-import { idSchema } from '../routes/schemas/idSchema.js';
+import { transactionSchema } from '../schemas/transactionSchema.js';
+import { idSchema } from '../schemas/idSchema.js';
 
 export async function getUser(req, res) {
   try {

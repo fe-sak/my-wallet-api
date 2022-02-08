@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import db from '../databaseConnect.js';
-import { userSchema } from '../routes/schemas/userSchema.js';
+import { userSchema } from '../schemas/userSchema.js';
 
 export async function login(req, res) {
   const { email, password } = req.body;
