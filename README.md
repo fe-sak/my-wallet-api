@@ -67,7 +67,7 @@ $ npm install
 With all dependencies installed and the environment properly configured, you can now run the app in development mode (run this command inside the project directory):
 
 ```
-$ npm run start
+$ npm run dev
 ```
 
 ## Learn more about react and how to set it up
