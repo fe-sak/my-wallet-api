@@ -39,7 +39,7 @@ Base URL: https://fesak-my-wallet-backend.herokuapp.com//)
 ![MongoDB](https://img.shields.io/badge/-MongoDB-05122A?style=flat&logo=MongoDB)
 
 
-## How to install this app (front-end)
+## How to install this api
 
   **Cloning the Repository**
 
@@ -61,6 +61,16 @@ _or_
 ```
 $ npm install
 ```
+
+**Configuring dev environment variables**
+
+You must create a .env file at the root of the project directory with the contents:
+```
+MONGO_URI=your_mong_server
+SALT=your_salt
+PORT=your_desired_port
+```
+And you also must substitute the values of the variables to your liking.
 
 ## How to run this app
 
